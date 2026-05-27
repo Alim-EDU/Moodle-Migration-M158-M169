@@ -1,0 +1,28 @@
+# Sensible Dateien
+.env
+*.sql
+moodle_database_dump.sql
+
+# Temporäre Dateien
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Logs
+*.log
+logs/
+
+# Docker-spezifische Dateien
+.docker/
+
+# Betriebssystem-spezifische Dateien
+.DS_Store
+Thumbs.db
+
+# IDE-spezifische Dateien
+.idea/
+.vscode/
+*.sublime-*
+*.code-workspace

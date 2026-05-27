@@ -1,0 +1,8 @@
+# Beispiel für .env-Datei
+# Kopiere diese Datei zu .env und passe die Werte an
+
+# MySQL-Konfiguration
+MYSQL_ROOT_PASSWORD=Secret
+MYSQL_DATABASE=moodle
+MYSQL_USER=moodle
+MYSQL_PASSWORD=Secret
