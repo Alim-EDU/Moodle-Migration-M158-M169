@@ -13,6 +13,11 @@ services:
     container_name: newmoodle_db_1
     networks:
       - moodlenet
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-Secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   moodle:
     image: 'moodlehq/moodle-php-apache:8.3'
@@ -20,7 +25,8 @@ services:
     ports:
       - '80:80'
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - 'moodle_app:/var/www/html'
       - 'moodle_data:/var/www/moodledata'
