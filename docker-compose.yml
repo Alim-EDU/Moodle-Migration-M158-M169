@@ -7,7 +7,7 @@ services:
       - MYSQL_USER=${MYSQL_USER:-moodle}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-Secret}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-Secret}
-    command: --default-authentication-plugin=mysql_native_password
+    command: --mysql-native-password=ON
     volumes:
       - 'mysql_data:/var/lib/mysql'
     container_name: newmoodle_db_1
