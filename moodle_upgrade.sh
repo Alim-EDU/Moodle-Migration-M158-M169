@@ -43,11 +43,20 @@ upgrade_moodle_version() {
     docker exec newmoodle_web_1 apt-get update
     docker exec newmoodle_web_1 apt-get install -y wget unzip
 
-    local download_url="https://download.moodle.org/download.php/direct/stable$branch/moodle-$version.zip"
-    if [[ "$version" == "4.2.3" ]]; then download_url="https://download.moodle.org/download.php/direct/stable402/moodle-4.2.3.zip"; fi
-    
-    log_message "Lade Moodle $version herunter..."
-    docker exec newmoodle_web_1 bash -c "cd /tmp && wget -q $download_url -O moodle-$version.zip && unzip -q moodle-$version.zip"
+    local download_url="https://download.moodle.org/download.php/direct/stable$branch/moodle-latest-$branch.zip"
+if [[ "$version" == "4.2.3" ]]; then download_url="https://download.moodle.org/download.php/direct/stable402/moodle-4.2.3.zip"; fi
+
+log_message "Lade Moodle $version herunter (URL: $download_url)..."
+docker exec newmoodle_web_1 bash -c "cd /tmp && wget --no-check-certificate $download_url -O moodle-$version.zip"
+
+if ! docker exec newmoodle_web_1 bash -c "cd /tmp && unzip -t moodle-$version.zip > /dev/null 2>&1"; then
+    log_message "KRITISCHER FEHLER: Die heruntergeladene Datei ist kein gültiges ZIP-Archiv!"
+    log_message "Wahrscheinlich existiert die Version $version unter diesem Link nicht."
+    exit 1
+fi
+
+log_message "Entpacke Moodle $version..."
+docker exec newmoodle_web_1 bash -c "cd /tmp && unzip -q moodle-$version.zip"
 
     docker exec newmoodle_web_1 bash -c "find /var/www/html -mindepth 1 -maxdepth 1 -not -name 'config.php' -not -name 'moodledata' -exec rm -rf {} \;"
     docker exec newmoodle_web_1 bash -c "cp -rf /tmp/moodle/* /var/www/html/"
