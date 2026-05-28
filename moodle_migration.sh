@@ -82,7 +82,7 @@ main() {
     # MySQL-Dump erstellen
     log_section "Datenbank sichern"
     log_message "Erstelle MySQL-Dump der lokalen Moodle-Datenbank..."
-    sudo mysqldump --password=Secret moodle > moodle_database_dump.sql
+    sudo mysqldump -u root -h 127.0.0.1 --password=Secret moodle > moodle_database_dump.sql
     if [ $? -eq 0 ]; then
         log_message "MySQL-Dump erfolgreich erstellt"
     else
@@ -107,7 +107,7 @@ main() {
 
     # In den MySQL-Container wechseln und den Dump importieren
     log_message "Importiere Datenbank-Dump in den Container..."
-    docker exec -i newmoodle_db_1 mysql -u root --password=Secret moodle < ./moodle_database_dump.sql
+    docker exec -i newmoodle_db_1 bash -c "mysql -u root --password=Secret moodle < /var/lib/mysql/moodle_database_dump.sql"
     if [ $? -eq 0 ]; then
         log_message "Datenbank erfolgreich importiert"
     else
