@@ -30,12 +30,17 @@ Dieses Repository enthält Skripte zur Migration einer bestehenden Moodle-Instal
    MYSQL_PASSWORD=Secret
    ```
 
-3. Führe das Migrationsskript aus:
+3. Führe zuerst das Umstellungsskript aus, um die alte Instanz auf Port 8080 zu verschieben (damit Port 80 frei wird):
+   ```bash
+   sudo bash reconfigure_old_moodle.sh
+   ```
+
+4. Führe das Migrationsskript aus:
    ```bash
    bash moodle_migration.sh
    ```
 
-4. Folge den Anweisungen auf dem Bildschirm. Am Ende der Migration wirst du gefragt, ob du direkt mit dem Upgrade fortfahren möchtest.
+5. Folge den Anweisungen auf dem Bildschirm. Am Ende der Migration wirst du gefragt, ob du direkt mit dem Upgrade fortfahren möchtest.
 
 ## Manuelles Upgrade
 
@@ -46,13 +51,12 @@ bash moodle_upgrade.sh
 ```
 
 Das Upgrade-Skript führt folgende Schritte durch:
-1. Aktualisiert die PHP-Version schrittweise (7.4 -> 8.0 -> 8.2)
+1. Aktualisiert die PHP-Version schrittweise (8.1 -> 8.3)
 2. Führt ein optimiertes Upgrade von Moodle durch:
-   * Moodle 3.10 → 4.0 (mit PHP 7.4)
-   * Moodle 4.0 → 4.2.3 (mit PHP 8.0)
-   * Moodle 4.2.3 → 5.0 (mit PHP 8.2)
-   * Das Upgrade auf Version 3.11 wird übersprungen, da ein direktes Upgrade von 3.10 auf 4.0 möglich ist
-3. Umgeht die MySQL-Versionsüberprüfung, um Moodle 5.0 mit MySQL 8.0 zu betreiben
+   * Moodle 4.2 → 4.4 (mit PHP 8.1 / DocumentRoot `/var/www/html`)
+   * Moodle 4.4 → 5.2 (mit PHP 8.3 / DocumentRoot `/var/www/html/public`)
+3. Passt die Apache-Konfiguration dynamisch an, um den neuen ab Moodle 5.1 geforderten `/public`-Ordner als Webroot zu nutzen.
+4. Umgeht die MySQL-Versionsüberprüfung, um Moodle 5.2 mit MySQL 8.0/8.4 betreiben zu können.
 
 ## Hinweise
 

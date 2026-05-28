@@ -38,6 +38,7 @@ services:
       - MOODLE_DOCKER_DBUSER=${MYSQL_USER:-moodle}
       - MOODLE_DOCKER_DBPASS=${MYSQL_PASSWORD:-Secret}
       - MOODLE_DOCKER_WEB_HOST=localhost
+      - APACHE_DOCUMENT_ROOT=${APACHE_DOCUMENT_ROOT:-/var/www/html}
     networks:
       - moodlenet
 

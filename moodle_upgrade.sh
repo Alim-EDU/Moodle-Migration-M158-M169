@@ -10,10 +10,19 @@ log_section() { echo "==========================================================
 
 update_php_version() {
     local php_version="$1"
-    log_message "Aktualisiere PHP-Version auf $php_version..."
+    local doc_root="${2:-/var/www/html}"
+    log_message "Aktualisiere PHP-Version auf $php_version und DocumentRoot auf $doc_root..."
     
     # Sicherer Regex, egal welche Version aktuell drin steht
     sed -E -i "s|image: 'moodlehq/moodle-php-apache:.*'|image: 'moodlehq/moodle-php-apache:$php_version'|g" docker-compose.yml
+    
+    # APACHE_DOCUMENT_ROOT aktualisieren oder hinzufügen
+    if ! grep -q "APACHE_DOCUMENT_ROOT" docker-compose.yml; then
+        sed -i "/- MOODLE_DOCKER_WEB_HOST=localhost/a \      - APACHE_DOCUMENT_ROOT=$doc_root" docker-compose.yml
+    else
+        sed -E -i "s|- APACHE_DOCUMENT_ROOT=.*|- APACHE_DOCUMENT_ROOT=$doc_root|g" docker-compose.yml
+    fi
+
     docker compose down
     docker compose up -d
     sleep 15
@@ -28,7 +37,13 @@ bypass_mysql_version_check() {
     log_message "Umgehe MySQL Versionsprüfung..."
     docker exec newmoodle_db_1 mysql -u root -pSecret -e "USE mysql; DROP FUNCTION IF EXISTS version; CREATE FUNCTION version() RETURNS VARCHAR(64) DETERMINISTIC NO SQL RETURN '8.4.0';" || true
     
-    docker exec newmoodle_web_1 bash -c "sed -i 's/<VENDOR name=\"mysql\" version=\"8.4\"/<VENDOR name=\"mysql\" version=\"8.0\"/g' /var/www/html/admin/environment.xml"
+    local env_path="/var/www/html/admin/environment.xml"
+    if docker exec newmoodle_web_1 [ -f "/var/www/html/public/admin/environment.xml" ]; then
+        env_path="/var/www/html/public/admin/environment.xml"
+    fi
+    log_message "Verwende environment.xml Pfad: $env_path"
+    
+    docker exec newmoodle_web_1 bash -c "sed -i 's/<VENDOR name=\"mysql\" version=\"8.4\"/<VENDOR name=\"mysql\" version=\"8.0\"/g' $env_path"
     
     docker exec newmoodle_web_1 bash -c "sed -i \"/\\\$CFG->directorypermissions/a \\\$CFG->dboptions['dbminimumversion'] = '5.7.0';\" /var/www/html/config.php"
 }
@@ -76,21 +91,27 @@ docker exec newmoodle_web_1 bash -c "cd /tmp && unzip -q moodle-$version.zip"
     fi
 
     log_message "Führe Moodle Datenbank-Upgrade über CLI aus (Non-Interactive)..."
+    local cli_path="/var/www/html/admin/cli/upgrade.php"
+    if docker exec newmoodle_web_1 [ -f "/var/www/html/public/admin/cli/upgrade.php" ]; then
+        cli_path="/var/www/html/public/admin/cli/upgrade.php"
+    fi
+    log_message "Verwende CLI-Upgrade Pfad: $cli_path"
+    
     # Moodle CLI Befehl als www-data User ausführen - Keine Browser Interaktion nötig!
-    docker exec --user www-data newmoodle_web_1 php /var/www/html/admin/cli/upgrade.php --non-interactive
+    docker exec --user www-data newmoodle_web_1 php $cli_path --non-interactive
     
     log_message "Moodle $version Upgrade abgeschlossen."
 }
 
 # Ablaufsteuerung
 log_section "Start des Upgrade-Prozesses"
-update_php_version "7.4"
-upgrade_moodle_version "4.0" "400"
 
-update_php_version "8.0"
-upgrade_moodle_version "4.2.3" "423"
+# Schritt 1: Upgrade von Moodle 4.2 auf Moodle 4.4
+update_php_version "8.1" "/var/www/html"
+upgrade_moodle_version "4.4" "404"
 
-update_php_version "8.3"
+# Schritt 2: Upgrade von Moodle 4.4 auf Moodle 5.2
+update_php_version "8.3" "/var/www/html/public"
 upgrade_moodle_version "5.2" "502" "true"
 
 log_section "Upgrade komplett abgeschlossen!"

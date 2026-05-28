@@ -15,20 +15,6 @@ log_section() {
     echo "======================================================================"
 }
 
-configure_apache() {
-    log_section "Apache konfigurieren"
-    cat > moodle-apache.conf << EOF
-<Directory /var/www/html>
-    Options Indexes FollowSymLinks
-    AllowOverride All
-    Require all granted
-</Directory>
-EOF
-    docker cp moodle-apache.conf newmoodle_web_1:/etc/apache2/conf-available/moodle.conf
-    docker exec newmoodle_web_1 a2enconf moodle
-    docker exec newmoodle_web_1 service apache2 reload
-    rm -f moodle-apache.conf
-}
 
 main() {
     log_section "Docker-Container starten"
@@ -46,8 +32,6 @@ main() {
     docker exec -i newmoodle_db_1 mysql -u root -pSecret -e "DROP DATABASE IF EXISTS moodle; CREATE DATABASE moodle;"
     docker exec -i newmoodle_db_1 mysql -u root -pSecret moodle < moodle_database_dump.sql
     rm moodle_database_dump.sql
-
-    configure_apache
 
     log_section "Moodle-Dateien kopieren"
     APP_VOLUME_PATH=$(docker volume inspect --format '{{.Mountpoint}}' newmoodle_moodle_app)
