@@ -26,7 +26,7 @@ check_container_status() {
     return 1
 }
 
-# NEU: Wartet bis MySQL im Container wirklich bereit ist
+# Wartet bis MySQL im Container wirklich bereit ist (via mysqladmin ping, kein Passwort nötig)
 wait_for_mysql() {
     local container_name="$1"
     local max_attempts="${2:-30}"
@@ -34,7 +34,7 @@ wait_for_mysql() {
     log_message "Warte auf MySQL-Bereitschaft in $container_name..."
     while [ $attempt -le $max_attempts ]; do
         log_message "MySQL-Bereitschaftsprüfung (Versuch $attempt/$max_attempts)..."
-        if docker exec "$container_name" bash -c "mysql -u root --password=Secret -e 'SELECT 1;'" 2>/dev/null | grep -q "1"; then
+        if docker exec "$container_name" mysqladmin ping -h localhost --silent 2>/dev/null; then
             log_message "MySQL ist bereit"
             return 0
         fi
