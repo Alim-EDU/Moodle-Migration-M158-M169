@@ -82,7 +82,7 @@ main() {
     # MySQL-Dump erstellen
     log_section "Datenbank sichern"
     log_message "Erstelle MySQL-Dump der lokalen Moodle-Datenbank..."
-    sudo mysqldump -u root -h 127.0.0.1 --password=Secret moodle > moodle_database_dump.sql
+    sudo mysqldump -u debian-sys-maint -h 127.0.0.1 --password=vaIdfgRPSXzKbPPd moodle > moodle_database_dump.sql
     if [ $? -eq 0 ]; then
         log_message "MySQL-Dump erfolgreich erstellt"
     else
