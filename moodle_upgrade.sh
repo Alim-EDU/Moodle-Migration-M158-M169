@@ -68,7 +68,7 @@ upgrade_moodle_version() {
 
     log_message "Führe Moodle Datenbank-Upgrade über CLI aus (Non-Interactive)..."
     # Moodle CLI Befehl als www-data User ausführen - Keine Browser Interaktion nötig!
-    docker exec --user www-data newmoodle_web_1 php /var/www/html/admin/cli/upgrade.php --non-interactive --agree-license
+    docker exec --user www-data newmoodle_web_1 php /var/www/html/admin/cli/upgrade.php --non-interactive
     
     log_message "Moodle $version Upgrade abgeschlossen."
 }
